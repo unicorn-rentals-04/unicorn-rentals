@@ -1,6 +1,5 @@
-import {useState} from 'react';
-import {Link, Outlet, useRouteError} from 'react-router-dom';
-import {atom, useRecoilState} from 'recoil';
+import { Link, Outlet, useRouteError } from 'react-router-dom';
+import { atom, useRecoilState } from 'recoil';
 import './App.css';
 
 export function ErrorPage() {
