@@ -5,18 +5,36 @@ ecomm-reporter: # Deployment
         - Create a new AWS VPC
         - Create two new Ubuntu EC2 instances
         - Create a new S3 bucket
+        - Create a new database instance
+        - Load data
+        - Deploy traffic generation
   required_secrets:
     - path: lacework.access_token
     - path: ecomm.database_name
     - path: ecomm.database_user
     - path: ecomm.database_pass
   steps:
+    - name: reporter-auth-token
+      description: Create an auth token for use in the frontend
+      extension: Terraform
+      tags: infrastructure
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/tf/shared
+      args:
+        cloud: AWS
+        outputs:
+          - auth_token
+
     - name: reporter-vpc
       description: Create a new AWS Virtual Private Cloud (VPC) for the reporter app to reside in
       extension: VPC.AWS
       tags: infrastructure
+      needs:
+        - reporter-auth-token
       args:
         name: reporter-vpc
+
     - name: reporter-infra
       extension: Terraform
       source:
@@ -175,12 +193,14 @@ ecomm-reporter: # Deployment
           become: true
         extra_vars:
           deploy_lacework: true
+          ecomm_auth_token: !lookupSecret /reporter-auth-token/outputs/auth_token
           lacework_access_token: !secret lacework.access_token
           ecomm_reporter_endpoint: !lookup /backend-ec2/outputs/private_ip
           ecomm_database_host: !lookup /backend-ec2/outputs/private_ip
           ecomm_database_name: !secret ecomm.database_name
           ecomm_database_user: !secret ecomm.database_user
           ecomm_database_pass: !secret ecomm.database_pass
+
     - name: deploy-traffic-generation
       extension: Ansible
       source:

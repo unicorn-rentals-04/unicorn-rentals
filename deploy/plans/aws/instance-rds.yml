@@ -3,8 +3,11 @@ ecomm-reporter: # Deployment
   description: |
     This plan will do the following;
         - Create a new AWS VPC
-        - Create two new Ubuntu EC2 instances
+        - Create two new Amazon Linux EC2 instances
         - Create a new S3 bucket
+        - Create a new RDS instance
+        - Load data into RDS
+        - Deploy traffic generation
   required_secrets:
     - path: lacework.access_token
     - path: ecomm.database_name
