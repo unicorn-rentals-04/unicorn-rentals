@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  minio:
+    image: minio/minio:latest
+    entrypoint: sh
+    command: -c 'mkdir -p /export/testbucket && minio server  --console-address ":9001" /export'
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  mysql:
+    image: mysql/mysql-server
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_USER=report
+      - MYSQL_PASSWORD=report
+      - MYSQL_DATABASE=orders
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
