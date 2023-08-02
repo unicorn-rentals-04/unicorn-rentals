@@ -1,4 +1,9 @@
 - hosts: all
+  vars:
+    db_host: "{{ ecomm_database_host | default(omit) }}"
+    db_pass: "{{ ecomm_database_pass | default(omit) }}"
+    db_user: "{{ ecomm_database_user | default(omit) }}"
+    db_name: "{{ ecomm_database_name | default(omit) }}"
   tasks:
     - name: deploy traffic generation script
       blockinfile:
@@ -18,6 +23,7 @@
             curl -q -L $URL/api/archives
           done
     - name: deploy order generation script
+      when: db_host
       blockinfile:
         path: /usr/local/share/ecomm.ordermaker.sh
         create: true
@@ -30,7 +36,7 @@
           do
             DS=$(date +"%H:%M:%S %Z+0000")
             echo $i
-            mysql -h {{ecomm_database_host}} -u{{ecomm_database_user}} -p{{ecomm_database_pass}} {{ecomm_database_name}} << EOF
+            mysql -h {{db_host}} -u{{db_user}} -p{{db_pass}} {{db_name}} << EOF
           INSERT INTO orders(id, details) VALUES (NULL, "$DS");
           EOF
             sleep 1
@@ -41,6 +47,7 @@
         minute: "*/1"
         job: "/usr/local/share/ecomm.trafficmaker.sh"
     - name: execute order gen
+      when: db_host
       ansible.builtin.cron:
         name: "order-generator"
         minute: "*/1"

@@ -1,0 +1,23 @@
+FROM debian:bullseye-slim
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN useradd -m appuser && mkdir /usr/src/app
+COPY bin/ecomm-reporter-frontend-linux-amd64 /usr/local/bin/ecomm-rpt-fe
+COPY dist/frontend /usr/src/app/frontend
+RUN chmod a+x /usr/local/bin/ecomm-rpt-fe
+USER appuser
+WORKDIR /usr/src/app
+
+ENV ECOMM_AUTHTOKEN ""
+ENV ECOMM_APPBUILDPATH /usr/src/app/frontend
+ENV ECOMM_DATABASEHOST ""
+ENV ECOMM_DATABASENAME ""
+ENV ECOMM_DATABASEPORT ""
+ENV ECOMM_DATABASEUSER ""
+ENV ECOMM_DATABASEPASS ""
+ENV ECOMM_DATABASETYPE ""
+ENV ECOMM_REPORTERENDPOINT ""
+
+
+EXPOSE 8080
+ENTRYPOINT ["ecomm-rpt-fe"]

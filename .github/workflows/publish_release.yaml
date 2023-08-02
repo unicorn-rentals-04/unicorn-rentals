@@ -31,4 +31,5 @@ jobs:
       - name: run prepare
         env:
           PAT_GITHUB: ${{secrets.GITHUB_TOKEN}}
+          DOCKERHUB_USERNAME: ${{ github.repository_owner }}
         run: ./scripts/release.sh publish

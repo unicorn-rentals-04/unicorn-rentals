@@ -1,0 +1,75 @@
+---
+aws-k8s:
+  required_secrets:
+    - path: lacework.access_token
+      description: lacework agent token
+      prompt: true
+
+    - path: lacework.api_url
+      description: lacework API url
+      default: https://agent.lacework.net
+  steps:
+    - name: iam-role
+      extension: Terraform
+      description: This step creates a new IAM role for the K8s cluster nodes, allow app management
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/tf/aws/iam
+      args:
+        cloud: AWS
+        outputs:
+          - role_arn
+
+    - name: k8s
+      extension: EKS
+      description: This step uses the EKS extension (Terraform under the hood) to deploy the actual cluster. Expect runtimes in excess of 10 minutes
+      needs:
+        - iam-role
+      args:
+        region: !secret aws.region
+        cluster_name: sharedeks
+        enable_imds_v1: "true"
+        enable_ebs_csi: "true"
+        iam_role_additional_policies: !lookup /iam-role/outputs/role_arn
+      helpers:
+        - helper: EKSKubectl
+          lifecycle: [ afterCreate ]
+
+    - name: lacework-agent
+      extension: Helm
+      source:
+        - location: git+https://github.com/lacework/helm-charts.git
+        - location: https://raw.githubusercontent.com/lacework-dev/detc-resources/main/apps/lacework-agent-helm/values.yaml
+          templates:
+            - values.yaml
+        - https://raw.githubusercontent.com/lacework-dev/detc-resources/main/util/laceworkagent/ansible/templates/syscall.j2
+      needs:
+        - k8s
+      helpers:
+        - helper: RunCommand
+          args:
+            commands:
+              - ["mv", "syscall.j2", "lacework-agent/config/syscall_config.yaml"]
+        - helper: WriteValue
+          run_on_dryrun: true
+          args:
+            raw_value: !lookup /aws-k8s/k8s/outputs/kubectl_config
+            dstfile: kube.conf
+      args:
+        kubectl_config_file: kube.conf
+        repos:
+          - name: lacework
+            url: https://lacework.github.io/helm-charts
+        name: lacework-agent
+        namespace: lacework
+        chart: "lacework-agent/"
+        value_files:
+          - values.yaml
+        cluster_type: eks
+        cluster_name: !lookup /aws-k8s/k8s/outputs/cluster_name
+        access_token: !secret lacework.access_token
+        region: !secret aws.region
+        enable_cluster_agent: "true"
+        api_url: !secret lacework.api_url
+
+

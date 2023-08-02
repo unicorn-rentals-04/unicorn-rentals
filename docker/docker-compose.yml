@@ -11,8 +11,6 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
-      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -24,8 +22,51 @@ services:
     restart: always
     ports:
       - '3306:3306'
+    volumes:
+      - $PWD/docker/dbdump/reporter.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     environment:
       - MYSQL_USER=report
       - MYSQL_PASSWORD=report
       - MYSQL_DATABASE=orders
       - MYSQL_RANDOM_ROOT_PASSWORD=true
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 0s
+
+  backend:
+    build:
+      context: ../
+      dockerfile: docker/backend
+    restart: always
+    depends_on:
+      minio: 
+        condition: service_healthy
+    ports:
+      - '9999:9999'
+    environment:
+      ECOMM_BUCKET: testbucket
+      ECOMM_ACCESSKEY: minioadmin
+      ECOMM_SECRETACCESSKEY: minioadmin
+      ECOMM_OBJECTSTORAGEENDPOINT: http://minio:9000
+
+  frontend:
+    build:
+      context: ../
+      dockerfile: docker/frontend
+    restart: always
+    depends_on:
+      mysql: 
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+    environment:
+      ECOMM_AUTHTOKEN: testingtoken
+      ECOMM_DATABASEHOST: mysql
+      ECOMM_DATABASEPORT: 3306
+      ECOMM_DATABASEPASS: report
+      ECOMM_DATABASEUSER: report
+      ECOMM_DATABASENAME: orders
+      ECOMM_REPORTERENDPOINT: http://backend:9999

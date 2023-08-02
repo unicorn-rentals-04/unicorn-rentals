@@ -70,6 +70,7 @@ ecomm-reporter: # Deployment
           args:
             dst: backend_instance_name
             format: "rpt-backend-{{ .name_suffix }}"
+
     - name: frontend-ec2
       description: Create a new Ubuntu AWS EC2 instance that will host the reporter application
       extension: EC2Instance

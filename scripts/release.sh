@@ -132,6 +132,7 @@ publish_release() {
   compress_targets
   generate_shasums
   create_release
+  scripts/release_containers.sh
 }
 
 update_changelog() {

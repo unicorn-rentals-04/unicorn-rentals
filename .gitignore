@@ -4,3 +4,4 @@ vendor
 .DS_Store
 test.db
 dist
+docker/dbdump/reporter.sql

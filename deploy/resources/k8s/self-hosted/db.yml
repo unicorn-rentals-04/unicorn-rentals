@@ -1,0 +1,86 @@
+# frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecomm-reporter-db
+  labels:
+    app: ecomm-reporter-db
+spec:
+  ports:
+  - name: ecomm-reporter-db
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: ecomm-reporter-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecomm-reporter-db
+  labels:
+    app: ecomm-reporter-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecomm-reporter-db
+  template:
+    metadata:
+      labels:
+        app: ecomm-reporter-db
+    spec:
+      containers:
+      - name: ecomm-reporter-db
+        image: mysql/mysql-server
+        env:
+        - name: MYSQL_USER
+          value: "{{ .database_user }}"
+        - name: MYSQL_PASSWORD
+          value: "{{ .database_pass }}"
+        - name: MYSQL_DATABASE
+          value: "{{ .database_name }}"
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "true"
+        readinessProbe:
+          exec:
+            command: ["mysql", "-h", "127.0.0.1", "-u", "{{ .database_user }}", "--password={{ .database_pass }}", "-e", "SELECT 1"]
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        volumeMounts:
+        - name: dump
+          mountPath: /docker-entrypoint-initdb.d
+        - name: persistent-storage
+          mountPath: /var/lib/mysql
+      initContainers:
+      - name: init-db
+        image: alpine/curl
+        command: 
+        - curl
+        - -o
+        - /docker-entrypoint-initdb.d/dump.sql
+        - -L
+        - https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump
+        volumeMounts:
+          - mountPath: /docker-entrypoint-initdb.d
+            name: dump
+      volumes:
+      - name: dump
+        emptyDir: {}
+      - name: persistent-storage
+        persistentVolumeClaim:
+          claimName: ecomm-reporter-db-efs-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ecomm-reporter-db-efs-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "gp2"
+  resources:
+    requests:
+      storage: 25Gi

@@ -1,0 +1,17 @@
+FROM debian:bullseye-slim
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y ca-certificates
+RUN useradd -m appuser && mkdir /usr/src/app
+COPY bin/ecomm-reporter-backend-linux-amd64 /usr/local/bin/ecomm-rpt-be
+RUN chmod a+x /usr/local/bin/ecomm-rpt-be
+USER appuser
+WORKDIR /usr/src/app
+
+ENV ECOMM_BUCKET ""
+ENV ECOMM_OBJECTSTORAGEENDPOINT ""
+ENV ECOMM_STATICREGION ""
+
+
+EXPOSE 9999
+ENTRYPOINT ["ecomm-rpt-be"]

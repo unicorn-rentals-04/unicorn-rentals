@@ -1,0 +1,61 @@
+# frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecomm-rpt-frontend
+  labels:
+    apps: ecomm-rpt-frontend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: 'tcp'
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    - name: ecomm-rpt-frontend
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: ecomm-rpt-frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecomm-rpt-frontend
+  labels:
+    app: ecomm-rpt-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecomm-rpt-frontend
+  template:
+    metadata:
+      labels:
+        app: ecomm-rpt-frontend
+    spec:
+      containers:
+      - name: ecomm-rpt-frontend
+        image: ghcr.io/ipcrm/pandoras-box/reporter-fe:latest
+        securityContext:
+          privileged: true
+        env:
+        - name: ECOMM_AUTHTOKEN
+          value: "{{ .authtoken }}"
+        - name: ECOMM_DATABASEHOST
+          value: "{{ .database_host }}"
+        - name: ECOMM_DATABASEPORT
+          value: "{{ .database_port }}"
+        - name: ECOMM_DATABASEUSER
+          value: "{{ .database_user }}"
+        - name: ECOMM_DATABASEPASS
+          value: "{{ .database_pass }}"
+        - name: ECOMM_DATABASENAME
+          value: "{{ .database_name }}"
+        - name: ECOMM_REPORTERENDPOINT
+          value: "http://ecomm-reporter-backend:9999"
+        ports:
+        - containerPort: 8080

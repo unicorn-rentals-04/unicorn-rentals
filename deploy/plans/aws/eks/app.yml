@@ -1,0 +1,133 @@
+---
+ecomm-reporter: # Deployment
+  needs:
+    - aws-k8s
+  description: |
+    This plan will do the following;
+        - Create a new AWS VPC
+        - Create a new Ubuntu EC2 instance (for traffic generation)
+        - Create a new S3 bucket
+        - Create a new database instance (containerized)
+        - Load data
+        - Deploy Application to Existing EKS Cluster
+        - Deploy traffic generation
+  required_secrets:
+    - path: lacework.access_token
+    - path: ecomm.database_name
+    - path: ecomm.database_user
+    - path: ecomm.database_pass
+  steps:
+    - name: reporter-auth-token
+      description: Create an auth token for use in the frontend
+      extension: Terraform
+      tags: infrastructure
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/tf/shared
+      args:
+        cloud: AWS
+        outputs:
+          - auth_token
+
+    - name: utility-vpc
+      description: Create a new AWS Virtual Private Cloud (VPC) for the utility machine to reside in
+      extension: VPC.AWS
+      tags: infrastructure
+      args:
+        name: reporter-util-vpc
+
+    - name: utility-ec2
+      description: Create a new Ubuntu AWS EC2 instance that will function as a utility machine
+      extension: EC2Instance
+      tags: infrastructure
+      needs:
+        - utility-vpc
+      args:
+        vpc_id: !lookup /utility-vpc/outputs/vpc_id
+        subnet: !lookup /utility-vpc/outputs/subnet_id1
+        instance_name: reporter-utility
+        instance_type: t2.micro
+        ports: "22"
+
+    - name: reporter-s3
+      extension: Terraform
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/tf/aws/s3
+      tags: infrastructure
+      args:
+        cloud: "AWS"
+        outputs:
+          - bucket
+
+    - name: reporter
+      extension: Kubectl
+      tags: applications
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/k8s/self-hosted
+        templates:
+          - "db.yml"
+          - "backend.yml"
+          - "frontend.yml"
+      helpers:
+        - helper: WriteValue
+          run_on_dryrun: true
+          args:
+            name: kubectl_config
+            dstfile: kubectl
+        - helper: GenerateOutput
+          lifecycle: [ afterCreate ]
+          args:
+            dst: "frontend_app_url"
+            format: "http://{{ .frontend_address }}"
+      needs:
+        - utility-ec2
+        - reporter-s3
+      args:
+        kubectl_config: !lookup /aws-k8s/k8s/outputs/kubectl_config
+        kubectl_config_file: kubectl
+        kube_manifest_path: .
+        authtoken: !lookupSecret /reporter-auth-token/outputs/auth_token
+        database_host: "ecomm-reporter-db"
+        database_port: "3306"
+        database_user: !secret ecomm.database_user
+        database_pass: !secret ecomm.database_pass
+        database_name: !secret ecomm.database_name
+        ecomm_bucket: !lookup /reporter-s3/outputs/bucket
+        ecomm_bucket_region: us-east-1
+        ecomm_reporter_object_storage_endpoint: https://s3.amazonaws.com
+        wait_for:
+           frontend_address:
+             resource_type: svc
+             resource_name: ecomm-rpt-frontend
+             json_path: "{.status.loadBalancer.ingress[0].hostname}"
+
+    - name: deploy-traffic-generation
+      extension: Ansible
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/ansible
+      needs:
+        - reporter
+      helpers:
+        - helper: ServiceAvailable
+          args:
+            max_wait: 60 # seconds
+            hostname: !lookup /utility-ec2/outputs/ip
+            port: 22
+        - helper: WriteValue
+          run_on_dryrun: true
+          args:
+            raw_value: !lookupSecret /utility-ec2/outputs/pem
+            dstfile: instance.pem
+            mode: 0600
+      args:
+        user: "ubuntu"
+        private_key: instance.pem
+        inventory: !lookup /utility-ec2/outputs/ip
+        playbook: traffic.yml
+        privilege_escalation:
+          become: true
+        extra_vars:
+          ecomm_reporter_url: !lookup /reporter/outputs/frontend_app_url

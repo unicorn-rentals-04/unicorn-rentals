@@ -31,7 +31,7 @@ help:
 	@echo "-------------------------------------------------------------------"
 
 .PHONY: prepare
-prepare: install-tools go-vendor ## Initialize the go environment
+prepare: install-tools go-vendor download-assets ## Initialize the environment
 
 .PHONY: test
 test: prepare ## Run all tests
@@ -150,6 +150,14 @@ integration-test: install-tools ## Run integration tests
 .PHONY: dev-docs
 dev-docs:
 	cd docs && yarn && yarn start
+
+.PHONY: download-assets
+download-assets:
+	cd docker/dbdump && \
+  	curl -sqL https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump.tgz -o dump.tgz && \
+		tar -zxf dump.tgz && \
+		rm dump.tgz && \
+		mv reporter.sql.dump reporter.sql
 
 .PHONY: install-tools
 install-tools: ## Install go indirect dependencies

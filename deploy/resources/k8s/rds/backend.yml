@@ -1,0 +1,51 @@
+# frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecomm-reporter-backend
+  labels:
+    apps: ecomm-reporter-backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: 'tcp'
+spec:
+  ports:
+    - name: ecomm-reporter-backend
+      port: 9999
+      protocol: TCP
+      targetPort: 9999
+  selector:
+    app: ecomm-reporter-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecomm-reporter-backend
+  labels:
+    app: ecomm-reporter-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecomm-reporter-backend
+  template:
+    metadata:
+      labels:
+        app: ecomm-reporter-backend
+    spec:
+      containers:
+      - name: ecomm-reporter-backend
+        image: ghcr.io/ipcrm/pandoras-box/reporter-be:latest
+        securityContext:
+          privileged: true
+        env:
+        - name: ECOMM_BUCKET
+          value: "{{ .ecomm_bucket }}"
+        - name: ECOMM_STATICREGION
+          value: "{{ .ecomm_bucket_region }}"
+        - name: ECOMM_OBJECTSTORAGEENDPOINT
+          value: "{{ .ecomm_reporter_object_storage_endpoint }}"
+        ports:
+        - containerPort: 9999
