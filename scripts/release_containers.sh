@@ -6,7 +6,6 @@ function log() {
 }
 
 VERSION=$(cat VERSION)
-DOCKERHUB_USERNAME=
 
 # Authenticate to dockerhub
 echo "$GITHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
