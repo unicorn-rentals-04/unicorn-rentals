@@ -8,7 +8,7 @@ function log() {
 VERSION=$(cat VERSION)
 
 # Authenticate to dockerhub
-echo $PAT_GITHUB | docker login -u $DOCKERHUB_USERNAME --password-stdin
+echo $PAT_GITHUB | docker login ghcr.io -u $DOCKERHUB_USERNAME --password-stdin
 
 
 readonly repo_base="ghcr.io/ipcrm/pandoras-box"
