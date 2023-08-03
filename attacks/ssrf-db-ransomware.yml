@@ -1,0 +1,36 @@
+---
+ssrf-db-ransomware:
+  needs:
+  - ecomm-reporter
+  - ecomm-reporter-attack
+  run_mode: true
+  steps:
+    - name: ssrf-creds
+      extension: Ansible
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: attacks/resources/ansible
+      helpers:
+        - helper: ServiceAvailable
+          args:
+            max_wait: 60 # seconds
+            hostname: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip 
+            port: 22
+        - helper: WriteValue
+          run_on_dryrun: true
+          args:
+            raw_value: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/pem # same for all
+            dstfile: instance.pem
+            mode: 0600
+      args:
+        user: "ubuntu"
+        # user: !lookup /ecomm-reporter-attack/attacher-machine-1/outputs/username
+        private_key: instance.pem
+        inventory:
+          - !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip
+        playbook:
+          - ssrf-db-ransomware.yml
+        extra_vars:
+          database_name: orders
+          aws_region: !secret aws.region
+          app_url: !lookup /ecomm-reporter/reporter/outputs/frontend_app_url

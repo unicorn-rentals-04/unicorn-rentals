@@ -1,0 +1,67 @@
+---
+ecomm-reporter-attack: # Deployment
+  required_secrets:
+    - path: ecomm-reporter.attack_regions
+      default: "eu-central-1,ap-northeast-3,ap-south-1"
+  description: |
+    This plan will do the following;
+        - Create (3) three new ubuntu machines for launching attacks
+  steps:
+    - name: attacker-machine-vpcs
+      description: Create (3) three VPCs in different regions to facilitate attacks
+      extension: Terraform
+      tags: infrastructure
+      source:
+        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        subdir: deploy/resources/tf/aws/vpc
+      args:
+        cloud: AWS
+        regions: !secret ecomm-reporter.attack_regions
+        outputs:
+          - vpc1
+          - vpc2
+          - vpc3
+
+    - name: attacker-machine-1
+      description: Create a new Ubuntu AWS EC2 instance that will execute attacks
+      extension: EC2Instance
+      tags: infrastructure
+      needs:
+        - attacker-machine-vpcs
+      args:
+        region: !lookup /attacker-machine-vpcs/outputs/vpc1,region
+        vpc_id: !lookup /attacker-machine-vpcs/outputs/vpc1,vpc_id
+        subnet: !lookup /attacker-machine-vpcs/outputs/vpc1,subnet1
+        instance_name: attacker-machine-1
+        instance_type: t2.micro
+        ports: "22,5555"
+
+    - name: attacker-machine-2
+      description: Create a new Ubuntu AWS EC2 instance that will execute attacks
+      extension: EC2Instance
+      tags: infrastructure
+      needs:
+        - attacker-machine-vpcs
+      args:
+        region: !lookup /attacker-machine-vpcs/outputs/vpc2,region
+        vpc_id: !lookup /attacker-machine-vpcs/outputs/vpc2,vpc_id
+        subnet: !lookup /attacker-machine-vpcs/outputs/vpc2,subnet1
+        instance_name: attacker-machine-2
+        instance_type: t2.micro
+        ports: "22,5555"
+        ssh_public_key: !lookup /attacker-machine-1/outputs/public_key
+
+    - name: attacker-machine-3
+      description: Create a new Ubuntu AWS EC2 instance that will execute attacks
+      extension: EC2Instance
+      tags: infrastructure
+      needs:
+        - attacker-machine-vpcs
+      args:
+        region: !lookup /attacker-machine-vpcs/outputs/vpc3,region
+        vpc_id: !lookup /attacker-machine-vpcs/outputs/vpc3,vpc_id
+        subnet: !lookup /attacker-machine-vpcs/outputs/vpc3,subnet1
+        instance_name: attacker-machine-3
+        instance_type: t2.micro
+        ports: "22,5555"
+        ssh_public_key: !lookup /attacker-machine-1/outputs/public_key

