@@ -14,22 +14,9 @@ ecomm-reporter: # Deployment
   required_secrets:
     - path: lacework.access_token
     - path: ecomm.database_name
-    - path: ecomm.database_user
-    - path: ecomm.database_pass
+      default: order
   steps:
-    - name: reporter-rds
-      extension: RDS
-      tags: infrastructure
-      args:
-        vpc_id: !lookup /aws-k8s/k8s/outputs/vpc_id
-        subnet1: !lookup /aws-k8s/k8s/outputs/private_subnet_id,0
-        subnet2: !lookup /aws-k8s/k8s/outputs/private_subnet_id,1
-        username: !secret ecomm.database_user
-        password: !secret ecomm.database_pass
-        name: !secret ecomm.database_name
-        engine: "mysql"
-
-    - name: reporter-auth-token
+    - name: reporter-auth-details
       description: Create an auth token for use in the frontend
       extension: Terraform
       tags: infrastructure
@@ -40,6 +27,22 @@ ecomm-reporter: # Deployment
         cloud: AWS
         outputs:
           - auth_token
+          - db_user
+          - db_pass
+
+    - name: reporter-rds
+      extension: RDS
+      tags: infrastructure
+      needs:
+        - reporter-auth-details
+      args:
+        vpc_id: !lookup /aws-k8s/k8s/outputs/vpc_id
+        subnet1: !lookup /aws-k8s/k8s/outputs/private_subnet_id,0
+        subnet2: !lookup /aws-k8s/k8s/outputs/private_subnet_id,1
+        username: !lookupSecret /reporter-auth-details/outputs/db_user
+        password: !lookupSecret /reporter-auth-details/outputs/db_pass
+        name: !secret ecomm.database_name
+        engine: "mysql"
 
     - name: utility-vpc
       description: Create a new AWS Virtual Private Cloud (VPC) for the utility machine to reside in
@@ -101,9 +104,9 @@ ecomm-reporter: # Deployment
         kubectl_config: !lookup /aws-k8s/k8s/outputs/kubectl_config
         kubectl_config_file: kubectl
         kube_manifest_path: .
-        authtoken: !lookupSecret /reporter-auth-token/outputs/auth_token
-        database_user: !secret ecomm.database_user
-        database_pass: !secret ecomm.database_pass
+        authtoken: !lookupSecret /reporter-auth-details/outputs/auth_token
+        database_user: !lookupSecret /reporter-auth-details/outputs/db_user
+        database_pass: !lookupSecret /reporter-auth-details/outputs/db_pass
         database_name: !secret ecomm.database_name
         database_host: !lookup /reporter-rds/outputs/address
         database_port: !lookup /reporter-rds/outputs/port

@@ -14,10 +14,9 @@ ecomm-reporter: # Deployment
   required_secrets:
     - path: lacework.access_token
     - path: ecomm.database_name
-    - path: ecomm.database_user
-    - path: ecomm.database_pass
+      default: order
   steps:
-    - name: reporter-auth-token
+    - name: reporter-auth-details
       description: Create an auth token for use in the frontend
       extension: Terraform
       tags: infrastructure
@@ -28,6 +27,8 @@ ecomm-reporter: # Deployment
         cloud: AWS
         outputs:
           - auth_token
+          - db_user
+          - db_pass
 
     - name: utility-vpc
       description: Create a new AWS Virtual Private Cloud (VPC) for the utility machine to reside in
@@ -88,11 +89,11 @@ ecomm-reporter: # Deployment
         kubectl_config: !lookup /aws-k8s/k8s/outputs/kubectl_config
         kubectl_config_file: kubectl
         kube_manifest_path: .
-        authtoken: !lookupSecret /reporter-auth-token/outputs/auth_token
+        authtoken: !lookupSecret /reporter-auth-details/outputs/auth_token
         database_host: "ecomm-reporter-db"
         database_port: "3306"
-        database_user: !secret ecomm.database_user
-        database_pass: !secret ecomm.database_pass
+        database_user: !lookupSecret /reporter-auth-details/outputs/db_user
+        database_pass: !lookupSecret /reporter-auth-details/outputs/db_pass
         database_name: !secret ecomm.database_name
         ecomm_bucket: !lookup /reporter-s3/outputs/bucket
         ecomm_bucket_region: us-east-1

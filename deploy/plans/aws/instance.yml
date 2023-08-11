@@ -11,10 +11,9 @@ ecomm-reporter: # Deployment
   required_secrets:
     - path: lacework.access_token
     - path: ecomm.database_name
-    - path: ecomm.database_user
-    - path: ecomm.database_pass
+      default: order
   steps:
-    - name: reporter-auth-token
+    - name: reporter-auth-details
       description: Create an auth token for use in the frontend
       extension: Terraform
       tags: infrastructure
@@ -25,13 +24,15 @@ ecomm-reporter: # Deployment
         cloud: AWS
         outputs:
           - auth_token
+          - db_pass
+          - db_user
 
     - name: reporter-vpc
       description: Create a new AWS Virtual Private Cloud (VPC) for the reporter app to reside in
       extension: VPC.AWS
       tags: infrastructure
       needs:
-        - reporter-auth-token
+        - reporter-auth-details
       args:
         name: reporter-vpc
 
@@ -155,8 +156,8 @@ ecomm-reporter: # Deployment
           ecomm_reporter_object_storage_endpoint: https://s3.amazonaws.com
           deploy_reporter_database: true
           ecomm_database_name: !secret ecomm.database_name
-          ecomm_database_user: !secret ecomm.database_user
-          ecomm_database_pass: !secret ecomm.database_pass
+          ecomm_database_user: !lookupSecret /reporter-auth-details/outputs/db_user
+          ecomm_database_pass: !lookupSecret /reporter-auth-details/outputs/db_pass
     - name: deploy-frontend
       extension: Ansible
       source:
@@ -194,13 +195,13 @@ ecomm-reporter: # Deployment
           become: true
         extra_vars:
           deploy_lacework: true
-          ecomm_auth_token: !lookupSecret /reporter-auth-token/outputs/auth_token
+          ecomm_auth_token: !lookupSecret /reporter-auth-details/outputs/auth_token
           lacework_access_token: !secret lacework.access_token
           ecomm_reporter_endpoint: !lookup /backend-ec2/outputs/private_ip
           ecomm_database_host: !lookup /backend-ec2/outputs/private_ip
           ecomm_database_name: !secret ecomm.database_name
-          ecomm_database_user: !secret ecomm.database_user
-          ecomm_database_pass: !secret ecomm.database_pass
+          ecomm_database_user: !lookupSecret /reporter-auth-details/outputs/db_user
+          ecomm_database_pass: !lookupSecret /reporter-auth-details/outputs/db_pass
 
     - name: deploy-traffic-generation
       extension: Ansible
@@ -232,5 +233,5 @@ ecomm-reporter: # Deployment
           ecomm_reporter_url: !lookup /deploy-frontend/outputs/app_url
           ecomm_database_host: !lookup /backend-ec2/outputs/private_ip
           ecomm_database_name: !secret ecomm.database_name
-          ecomm_database_user: !secret ecomm.database_user
-          ecomm_database_pass: !secret ecomm.database_pass
+          ecomm_database_user: !lookupSecret /reporter-auth-details/outputs/db_user
+          ecomm_database_pass: !lookupSecret /reporter-auth-details/outputs/db_pass
