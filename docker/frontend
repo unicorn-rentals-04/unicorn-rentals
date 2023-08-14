@@ -1,11 +1,10 @@
 FROM debian:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN useradd -m appuser && mkdir /usr/src/app
+RUN mkdir /usr/src/app
 COPY bin/ecomm-reporter-frontend-linux-amd64 /usr/local/bin/ecomm-rpt-fe
 COPY dist/frontend /usr/src/app/frontend
 RUN chmod a+x /usr/local/bin/ecomm-rpt-fe
-USER appuser
 WORKDIR /usr/src/app
 
 ENV ECOMM_AUTHTOKEN ""
