@@ -1,7 +1,7 @@
 # Release Notes
-Another day, another release. These are the release notes for the version `v0.1.0`.
+Another day, another release. These are the release notes for the version `v0.2.0`.
 
 ## Features
-* feat(eks): enable containerized deployment (#3) (Matt Cadorette)([0452b0a](https://github.com/ipcrm/pandoras-box/commit/0452b0a1b1f2574546db1a5f969062f15cdc7480))
+* feat(db): generate db creds (ipcrm)([584ef0d](https://github.com/ipcrm/pandoras-box/commit/584ef0d0cb1deb236a98b71a301a30ffccfddc07))
 ## Other Changes
-* ci: version bump to v0.0.2-dev (DETC)([61552f3](https://github.com/ipcrm/pandoras-box/commit/61552f3b593b68e2c4a14d469b6de84ac1c1771e))
+* ci: version bump to v0.1.1-dev (DETC)([cd0ca8c](https://github.com/ipcrm/pandoras-box/commit/cd0ca8c249cb5694326e8044a814cc6624c2beac))
