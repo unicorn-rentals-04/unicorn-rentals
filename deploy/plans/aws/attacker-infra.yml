@@ -41,6 +41,7 @@ ecomm-reporter-attack: # Deployment
       extension: EC2Instance
       tags: infrastructure
       needs:
+        - attacker-machine-1
         - attacker-machine-vpcs
       args:
         region: !lookup /attacker-machine-vpcs/outputs/vpc2,region
@@ -56,6 +57,7 @@ ecomm-reporter-attack: # Deployment
       extension: EC2Instance
       tags: infrastructure
       needs:
+        - attacker-machine-1
         - attacker-machine-vpcs
       args:
         region: !lookup /attacker-machine-vpcs/outputs/vpc3,region
