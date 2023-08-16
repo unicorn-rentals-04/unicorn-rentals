@@ -11,8 +11,8 @@ resource "random_string" "db_user" {
 }
 
 resource "random_string" "db_pass" {
-  length  = 20
-  special = true
+  length  = 32
+  special = false
   upper   = true
 }
 
