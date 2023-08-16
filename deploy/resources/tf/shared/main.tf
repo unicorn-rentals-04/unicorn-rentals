@@ -6,7 +6,7 @@ resource "random_string" "token" {
 
 resource "random_string" "db_user" {
   length  = 20
-  special = true
+  special = false
   upper   = true
 }
 
