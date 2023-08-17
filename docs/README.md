@@ -19,4 +19,4 @@ Kubernetes.
 
 ### Attack Details
 
-See [Attacks](attacks)
+See [Attacks](attacks.md)
