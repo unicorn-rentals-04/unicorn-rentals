@@ -13,8 +13,8 @@ application has multiple attack surfaces and convenience features for emulating 
 The application has two major variants for deployment; all running directly on instances or containers running on
 Kubernetes.
 
-* [Instance Deployment](aws/instance)
-* [Containerized Deployment](aws/container)
+* [Instance Deployment](aws/instance.md)
+* [Containerized Deployment](aws/container.md)
 
 
 ### Attack Details
