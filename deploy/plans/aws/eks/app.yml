@@ -13,6 +13,7 @@ ecomm-reporter: # Deployment
         - Deploy traffic generation
   required_secrets:
     - path: lacework.access_token
+      prompt: true
     - path: ecomm.database_name
       default: order
   steps:
