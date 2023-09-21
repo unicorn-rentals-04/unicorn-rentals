@@ -5,7 +5,7 @@ ssrf-db-ransomware:
   - ecomm-reporter-attack
   run_mode: true
   steps:
-    - name: ssrf-creds
+    - name: execute-rds-ransomware
       extension: Ansible
       source:
         location: "git+https://github.com/ipcrm/pandoras-box.git"
@@ -31,6 +31,6 @@ ssrf-db-ransomware:
         playbook:
           - ssrf-db-ransomware.yml
         extra_vars:
-          database_name: orders
+          database_name: order
           aws_region: !secret aws.region
           app_url: !lookup /ecomm-reporter/reporter/outputs/frontend_app_url
