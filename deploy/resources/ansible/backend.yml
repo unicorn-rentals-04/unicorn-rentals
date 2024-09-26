@@ -6,12 +6,27 @@
         state: directory
         mode: '0755'
 
-    - name: Download Backend Binary
-      ansible.builtin.unarchive:
-        src: https://github.com/ipcrm/pandoras-box/releases/latest/download/ecomm-reporter-backend-linux-amd64.tar.gz
+    # - name: Download Backend Binary
+    #   ansible.builtin.unarchive:
+    #     src: https://github.com/unicorn-rentals-04/unicorn-trading/releases/latest/download/ecomm-reporter-backend-linux-amd64.tar.gz
+    #     dest: /usr/local/ecomm_reporter
+    #     remote_src: yes
+    #     mode: 0777
+
+    - name: Read-write git checkout from github
+      ansible.builtin.git:
+        repo: https://github.com/unicorn-rentals-04/unicorn-trading.git
+        dest: /usr/local/unicorn-trading
+
+    - name: Copy reporter file
+      copy:
+        src: /usr/local/unicorn-trading
         dest: /usr/local/ecomm_reporter
-        remote_src: yes
-        mode: 0777
+
+    - name: build go binary
+      ansible.builtin.command: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o module-name
+      args:
+          chdir: /usr/local/ecomm_reporter
 
     - name: Write Config file
       blockinfile:
@@ -70,7 +85,7 @@
   tasks:
     - name: Download Sample Data
       ansible.builtin.unarchive:
-        src: https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump.tgz
+        src: https://github.com/unicorn-rentals-04/unicorn-trading/releases/download/v0.0.1/reporter.sql.dump.tgz
         dest: /var/tmp
         remote_src: yes
         mode: 0777

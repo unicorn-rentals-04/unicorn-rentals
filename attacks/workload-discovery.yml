@@ -8,13 +8,13 @@ workload-discovery:
     - name: workload-discovery
       extension: Ansible
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: attacks/resources
       helpers:
         - helper: ServiceAvailable
           args:
             max_wait: 60 # seconds
-            hostname: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip 
+            hostname: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip
             port: 22
         - helper: WriteValue
           run_on_dryrun: true
@@ -33,5 +33,5 @@ workload-discovery:
         extra_vars:
           app_url: !lookup /ecomm-reporter/reporter/outputs/frontend_app_url
           auth_token: !lookup /ecomm-reporter/reporter-auth-details/outputs/auth_token
-          remote_ip: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip 
+          remote_ip: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip
 

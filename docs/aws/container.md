@@ -15,8 +15,8 @@ To deploy Pandora's box with an RDS instance, use the following commands:
 
 ```
 detc create \
-  --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/eks/app-rds.yml \
-  --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/eks/infra.yml \
+  --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/eks/app-rds.yml \
+  --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/eks/infra.yml \
   --apply
 ```
 
@@ -26,8 +26,8 @@ To deploy Pandora's box with a MySQL database hosted within the EKS cluster, run
 
 ```
 detc create \
-  --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/eks/app.yml \
-  --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/eks/infra.yml \
+  --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/eks/app.yml \
+  --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/eks/infra.yml \
   --apply
 ```
 

@@ -11,7 +11,7 @@
 set -eou pipefail
 
 readonly project_name=pandoras-box
-readonly org_name=ipcrm
+readonly org_name=unicorn-rentals-04
 readonly package_name=ecomm-reporter
 readonly binary_name=ecomm-rpt
 readonly git_user="DETC Team"

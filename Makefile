@@ -16,9 +16,9 @@ PACKAGENAME?=ecomm-reporter
 CLINAME?=ecomm-rpt
 GOFLAGS=-mod=vendor
 CGO_ENABLED?=1
-GO_LDFLAGS="-X github.com/ipcrm/pandoras-box/cli/cmd.Version=$(shell cat VERSION) \
-            -X github.com/ipcrm/pandoras-box/cli/cmd.GitSHA=$(shell git rev-parse HEAD) \
-            -X github.com/ipcrm/pandoras-box/cli/cmd.BuildTime=$(shell date +%Y%m%d%H%M%S)"
+GO_LDFLAGS="-X github.com/unicorn-rentals-04/unicorn-trading/cli/cmd.Version=$(shell cat VERSION) \
+            -X github.com/unicorn-rentals-04/unicorn-trading/cli/cmd.GitSHA=$(shell git rev-parse HEAD) \
+            -X github.com/unicorn-rentals-04/unicorn-trading/cli/cmd.BuildTime=$(shell date +%Y%m%d%H%M%S)"
 
 export GOFLAGS GO_LDFLAGS CGO_ENABLED GOX_LINUX_AMD64_LDFLAGS
 
@@ -75,13 +75,13 @@ build-cli-cross-platform:
             -arch="amd64 386" \
             -osarch="darwin/amd64 darwin/arm64 linux/arm linux/arm64" \
             -ldflags=$(GO_LDFLAGS) \
-            github.com/ipcrm/pandoras-box/cli/backend
+            github.com/unicorn-rentals-04/unicorn-trading/cli/backend
 	gox -output="bin/$(PACKAGENAME)-frontend-{{.OS}}-{{.Arch}}" \
             -os="linux" \
             -arch="amd64 386" \
             -osarch="darwin/amd64 darwin/arm64 linux/arm linux/arm64" \
             -ldflags=$(GO_LDFLAGS) \
-            github.com/ipcrm/pandoras-box/cli/frontend
+            github.com/unicorn-rentals-04/unicorn-trading/cli/frontend
 
 .PHONY: build-cli-dev
 build-cli-dev:
@@ -91,7 +91,7 @@ ifeq (x86_64, $(shell uname -m))
 						-arch="amd64" \
 						-gcflags="all=-N -l" \
 						-ldflags=$(GO_LDFLAGS) \
-						github.com/ipcrm/pandoras-box/cli/backend
+						github.com/unicorn-rentals-04/unicorn-trading/cli/backend
 else
 	gox -output="bin/$(PACKAGENAME)-backend-{{.OS}}-{{.Arch}}" \
 						-os=$(shell uname -s | tr '[:upper:]' '[:lower:]') \
@@ -99,7 +99,7 @@ else
 						-gcflags="all=-N -l" \
 						-osarch="$(shell uname -s | tr '[:upper:]' '[:lower:]')/amd $(shell uname -s | tr '[:upper:]' '[:lower:]')/arm" \
 						-ldflags=$(GO_LDFLAGS) \
-						github.com/ipcrm/pandoras-box/cli/backend
+						github.com/unicorn-rentals-04/unicorn-trading/cli/backend
 endif
 ifeq (x86_64, $(shell uname -m))
 	gox -output="bin/$(PACKAGENAME)-frontend-{{.OS}}-{{.Arch}}" \
@@ -107,7 +107,7 @@ ifeq (x86_64, $(shell uname -m))
 						-arch="amd64" \
 						-gcflags="all=-N -l" \
 						-ldflags=$(GO_LDFLAGS) \
-						github.com/ipcrm/pandoras-box/cli/frontend
+						github.com/unicorn-rentals-04/unicorn-trading/cli/frontend
 else
 	gox -output="bin/$(PACKAGENAME)-backend-{{.OS}}-{{.Arch}}" \
 						-os=$(shell uname -s | tr '[:upper:]' '[:lower:]') \
@@ -115,7 +115,7 @@ else
 						-gcflags="all=-N -l" \
 						-osarch="$(shell uname -s | tr '[:upper:]' '[:lower:]')/amd $(shell uname -s | tr '[:upper:]' '[:lower:]')/arm" \
 						-ldflags=$(GO_LDFLAGS) \
-						github.com/ipcrm/pandoras-box/cli/frontend
+						github.com/unicorn-rentals-04/unicorn-trading/cli/frontend
 endif
 
 .PHONY: copy-bins
@@ -145,7 +145,7 @@ build-all-dev: install-cli-dev
 
 .PHONY: integration-test
 integration-test: install-tools ## Run integration tests
-	PATH=$(PWD)/bin:${PATH} gotestsum -f testname -- -v github.com/ipcrm/pandoras-box/test/integration
+	PATH=$(PWD)/bin:${PATH} gotestsum -f testname -- -v github.com/unicorn-rentals-04/unicorn-trading/test/integration
 
 .PHONY: dev-docs
 dev-docs:
@@ -154,7 +154,7 @@ dev-docs:
 .PHONY: download-assets
 download-assets:
 	cd docker/dbdump && \
-  	curl -sqL https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump.tgz -o dump.tgz && \
+  	curl -sqL https://github.com/unicorn-rentals-04/unicorn-trading/releases/download/v0.0.1/reporter.sql.dump.tgz -o dump.tgz && \
 		tar -zxf dump.tgz && \
 		rm dump.tgz && \
 		mv reporter.sql.dump reporter.sql

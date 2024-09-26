@@ -19,7 +19,7 @@ ecomm-reporter: # Deployment
       extension: Terraform
       tags: infrastructure
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/tf/shared
       args:
         cloud: AWS
@@ -54,7 +54,7 @@ ecomm-reporter: # Deployment
     - name: reporter-infra
       extension: Terraform
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/tf/aws/infra
       tags: infrastructure
       needs:
@@ -125,7 +125,7 @@ ecomm-reporter: # Deployment
     - name: reporter-s3
       extension: Terraform
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/tf/aws/s3
       tags: infrastructure
       needs:
@@ -134,10 +134,11 @@ ecomm-reporter: # Deployment
         cloud: "AWS"
         outputs:
           - bucket
+
     - name: deploy-backend
       extension: Ansible
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/ansible
       needs:
         - backend-ec2
@@ -158,6 +159,7 @@ ecomm-reporter: # Deployment
         galaxy:
           roles:
             - geerlingguy.mysql
+            - geerlingguy.go
         private_key: instance.pem
         inventory: !lookup /backend-ec2/outputs/ip
         playbook:
@@ -176,7 +178,7 @@ ecomm-reporter: # Deployment
     - name: deploy-frontend
       extension: Ansible
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/ansible
       needs:
         - frontend-ec2
@@ -223,7 +225,7 @@ ecomm-reporter: # Deployment
     - name: deploy-traffic-generation
       extension: Ansible
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/ansible
       needs:
         - deploy-frontend

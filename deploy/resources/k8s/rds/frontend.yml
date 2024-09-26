@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: ecomm-rpt-frontend
-        image: ghcr.io/ipcrm/pandoras-box/reporter-fe:latest
+        image: ghcr.io/unicorn-rentals-04/unicorn-trading/reporter-fe:latest
         securityContext:
           privileged: true
         env:

@@ -11,7 +11,7 @@ VERSION=$(cat VERSION)
 echo $PAT_GITHUB | docker login ghcr.io -u $DOCKERHUB_USERNAME --password-stdin
 
 
-readonly repo_base="ghcr.io/ipcrm/pandoras-box"
+readonly repo_base="ghcr.io/unicorn-rentals-04/unicorn-trading"
 
 
 ## Build Docker Images

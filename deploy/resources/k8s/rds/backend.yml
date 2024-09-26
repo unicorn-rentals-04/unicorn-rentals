@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: ecomm-reporter-backend
-        image: ghcr.io/ipcrm/pandoras-box/reporter-be:latest
+        image: ghcr.io/unicorn-rentals-04/unicorn-trading/reporter-be:latest
         securityContext:
           privileged: true
         env:

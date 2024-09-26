@@ -12,7 +12,7 @@ aws-k8s:
       extension: Terraform
       description: This step creates a new IAM role for the K8s cluster nodes, allow app management
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/tf/aws/iam
       args:
         cloud: AWS

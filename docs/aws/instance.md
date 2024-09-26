@@ -14,7 +14,7 @@ In order to deploy Pandora's Box you will need AWS credentials, Lacework credent
 To deploy Pandora's box with an RDS instance, use the following commands:
 
 ```
-detc create --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/instance-rds.yml --apply
+detc create --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/instance-rds.yml --apply
 ```
 
 ##### Instances w/StandAlone database
@@ -22,7 +22,7 @@ detc create --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/dep
 To deploy Pandora's box with a MySQL database hosted on the backend EC2 instance, run the following command:
 
 ```
-detc create --plan https://raw.githubusercontent.com/ipcrm/pandoras-box/main/deploy/plans/aws/instance.yml --apply
+detc create --plan https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/main/deploy/plans/aws/instance.yml --apply
 ```
 
 

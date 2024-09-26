@@ -1,4 +1,4 @@
-module github.com/ipcrm/pandoras-box
+module github.com/unicorn-rentals-04/unicorn-trading
 
 go 1.17
 

@@ -8,13 +8,13 @@ ssrf: # Deployment
     - name: ssrf-creds
       extension: Ansible
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: attacks/resources/ansible
       helpers:
         - helper: ServiceAvailable
           args:
             max_wait: 60 # seconds
-            hostname: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip 
+            hostname: !lookup /ecomm-reporter-attack/attacker-machine-1/outputs/ip
             port: 22
         - helper: WriteValue
           run_on_dryrun: true

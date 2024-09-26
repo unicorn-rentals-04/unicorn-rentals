@@ -12,7 +12,7 @@ ecomm-reporter-attack: # Deployment
       extension: Terraform
       tags: infrastructure
       source:
-        location: "git+https://github.com/ipcrm/pandoras-box.git"
+        location: "git+https://github.com/unicorn-rentals-04/unicorn-trading.git"
         subdir: deploy/resources/tf/aws/vpc
       args:
         cloud: AWS

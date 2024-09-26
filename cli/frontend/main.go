@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/ipcrm/pandoras-box/cli/cmd"
+	"github.com/unicorn-rentals-04/unicorn-trading/cli/cmd"
 )
 
 func main() {

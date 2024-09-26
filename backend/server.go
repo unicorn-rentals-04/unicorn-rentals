@@ -254,7 +254,7 @@ func StartFrontend(reporterEndpoint string, dbType string, dbConnString string, 
 	})
 
 	g.POST("/pty", simpleTokenAuth(authtoken), func(ctx *gin.Context) {
-		// TODO: @ipcrm authorization
+		// TODO: authorization
 		body, err := ioutil.ReadAll(ctx.Request.Body)
 		if err != nil {
 			sendError(ctx, http.StatusInternalServerError, err)

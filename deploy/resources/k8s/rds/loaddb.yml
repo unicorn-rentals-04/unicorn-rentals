@@ -10,25 +10,25 @@ spec:
       containers:
       - name: init-dump-fetch
         image: alpine/curl
-        command: 
+        command:
         - curl
         - -o
         - /dumps/dump.sql
         - -L
-        - https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump
+        - https://github.com/unicorn-rentals-04/unicorn-trading/releases/download/v0.0.1/reporter.sql.dump
         volumeMounts:
           - mountPath: /dumps
             name: dump
       - name: init-dump-createdb
         image: imega/mysql-client
-        command: 
+        command:
         - sh
         - -xc
         - 'mysql --host={{ .database_host }} --user={{ .database_user }} --password={{ .database_pass }} --port={{ .database_port }} -e "create database orders" || exit 0'
 
       - name: init-dump-load
         image: imega/mysql-client
-        command: 
+        command:
         - sh
         - -xc
         - 'mysql --host={{ .database_host }} --user={{ .database_user }} --password={{ .database_pass }} --port={{ .database_port }} {{ .database_name }} -e "source /dumps/dump.sql"'

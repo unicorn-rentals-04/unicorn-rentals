@@ -57,12 +57,12 @@ spec:
       initContainers:
       - name: init-db
         image: alpine/curl
-        command: 
+        command:
         - curl
         - -o
         - /docker-entrypoint-initdb.d/dump.sql
         - -L
-        - https://github.com/ipcrm/pandoras-box/releases/download/v0.0.1/reporter.sql.dump
+        - https://github.com/unicorn-rentals-04/unicorn-trading/releases/download/v0.0.1/reporter.sql.dump
         volumeMounts:
           - mountPath: /docker-entrypoint-initdb.d
             name: dump
