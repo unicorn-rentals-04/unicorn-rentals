@@ -1,0 +1,22 @@
+- hosts: all
+  roles:
+    - geerlingguy.java
+  vars:
+    - sftp_enabled: true
+  tasks:
+    - name: Install maven
+      ansible.builtin.package:
+        name: maven
+        state: present
+        update_cache: yes
+
+    - name: Download POM file
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/unicorn-rentals-04/unicorn-trading/refs/heads/main/deploy/resources/maven/pom.xml
+        dest: ~/
+        mode: 0777
+      become: false
+
+    - name: maven install
+      ansible.builtin.shell: bash -l -c "mvn dependency:copy-dependencies"
+      become: false
