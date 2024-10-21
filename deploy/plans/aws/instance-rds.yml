@@ -158,6 +158,9 @@ ecomm-reporter: # Deployment
         playbook: traffic.yml
         privilege_escalation:
           become: true
+        galaxy:
+          collections:
+            - devsec.hardening
         extra_vars:
           ecomm_reporter_url: !lookup /deploy-frontend/outputs/api_url
           ecomm_database_host: !lookup /unicorn-rentals-rds/outputs/address
@@ -367,6 +370,8 @@ ecomm-reporter: # Deployment
         galaxy:
           roles:
             - geerlingguy.java
+          collections:
+            - devsec.hardening
         private_key: instance.pem
         inventory: !lookup /bastion-ec2/outputs/ip
         playbook:
@@ -399,6 +404,8 @@ ecomm-reporter: # Deployment
           roles:
             - geerlingguy.mysql
             - geerlingguy.go
+          collections:
+            - devsec.hardening
         private_key: instance.pem
         inventory: !lookup /backend-ec2/outputs/ip
         playbook:
@@ -452,6 +459,8 @@ ecomm-reporter: # Deployment
           roles:
             - geerlingguy.nodejs
             - geerlingguy.go
+          collections:
+            - devsec.hardening
         private_key: instance.pem
         inventory: !lookup /frontend-ec2/outputs/ip
         playbook:

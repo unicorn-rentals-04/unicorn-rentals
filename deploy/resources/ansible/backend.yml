@@ -2,9 +2,27 @@
   vars:
     go_version: "1.22.1"
     go_checksum: "aab8e15785c997ae20f9c88422ee35d962c4562212bb0f879d052a35c8307c7f"
+    sftp_enabled: true
   roles:
-    - role: geerlingguy.go
+    - geerlingguy.go
+    - devsec.hardening.ssh_hardening
   tasks:
+    - name: enable amazon extras
+      ansible.builtin.shell: amazon-linux-extras install epel -y
+
+    - name: Install fail2ban
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+        update_cache: true
+
+    - name: enable fail2ban
+      ansible.builtin.shell: |
+        cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+        sed -i "s/^\[sshd\]/[sshd]\nenabled=true/" /etc/fail2ban/jail.local
+        systemctl restart fail2ban
+        systemctl enable fail2ban
+
     - name: Install git
       ansible.builtin.package:
         name: git

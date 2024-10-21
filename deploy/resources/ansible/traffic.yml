@@ -1,10 +1,19 @@
 - hosts: all
+  roles:
+    - devsec.hardening.ssh_hardening
   vars:
     db_host: "{{ ecomm_database_host | default(omit) }}"
     db_pass: "{{ ecomm_database_pass | default(omit) }}"
     db_user: "{{ ecomm_database_user | default(omit) }}"
     db_name: "{{ ecomm_database_name | default(omit) }}"
+    sftp_enabled: true
   tasks:
+    - name: Install fail2ban
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
     - name: deploy traffic generation script
       blockinfile:
         path: /usr/local/share/ecomm.trafficmaker.sh

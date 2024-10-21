@@ -8,11 +8,21 @@
 - hosts: all
   roles:
     - geerlingguy.nodejs
+    - devsec.hardening.ssh_hardening
+  vars:
+    sftp_enabled: true
   tasks:
+    - name: Install fail2ban
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
     - name: Install git
       ansible.builtin.package:
         name: git
         state: present
+        update_cache: yes
 
     - name: Create app dir
       ansible.builtin.file:

@@ -1,9 +1,16 @@
 - hosts: all
   roles:
     - geerlingguy.java
+    - devsec.hardening.ssh_hardening
   vars:
-    - sftp_enabled: true
+    sftp_enabled: true
   tasks:
+    - name: Install fail2ban
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
     - name: Install maven
       ansible.builtin.package:
         name: maven
